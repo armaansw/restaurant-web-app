@@ -1,0 +1,391 @@
+drop database if exists restaurantDB;
+create database restaurantDB;
+
+
+create table restaurant (
+    name varchar(50) primary key,
+    street varchar(50),
+    city varchar(50),
+    zip char(5),
+    url varchar(50)
+);
+create table chef (
+    employeeID integer primary key,
+    firstName varchar(50),
+    lastName varchar(50),
+    emailAddress varchar(50),
+    restaurantName varchar(50) not null,
+    foreign key (restaurantName) references restaurant(name) on delete cascade
+);
+
+
+create table manager (
+    employeeID integer primary key,
+    firstName varchar(50),
+    lastName varchar(50),
+    emailAddress varchar(50),
+    restaurantName varchar(50) not null,
+    foreign key (restaurantName) references restaurant(name) on delete cascade
+);
+
+
+create table serverE (
+    employeeID integer primary key,
+    firstName varchar(50),
+    lastName varchar(50),
+    emailAddress varchar(50),
+    restaurantName varchar(50) not null,
+    foreign key (restaurantName) references restaurant(name) on delete cascade
+);
+
+
+create table delivery (
+    employeeID integer primary key,
+    firstName varchar(50),
+    lastName varchar(50),
+    emailAddress varchar(50),
+    restaurantName varchar(50) not null,
+    foreign key (restaurantName) references restaurant(name) on delete cascade
+);
+
+
+create table customer (
+    emailAddress varchar(50) primary key,
+    firstName varchar(50),
+    lastName varchar(50),
+    phoneNumber char(10),
+    street varchar(50),
+    city varchar(50),
+    zip char(5)
+);
+
+
+create table orderE (
+    orderID integer primary key,
+    totalPrice decimal(20,2),
+    tip decimal(20,2),
+    placementTime time,
+    placementDate date,
+    deliveryTime time,
+    deliveredBy varchar(50),
+    customerEmailAddress varchar(50) not null,
+    deliveryEmployeeID integer, 
+    restaurantName varchar (50) not null,
+    foreign key (customerEmailAddress) references customer(emailAddress) on delete cascade,
+    foreign key (deliveryEmployeeID) references delivery(employeeID) on delete set null,
+    foreign key (restaurantName) references restaurant(name) on delete cascade
+);
+
+
+create table account (
+    credit decimal(20,2) primary key,
+    customerEmailAddress varchar(50) not null,
+    foreign key (customerEmailAddress) references customer(emailAddress) on delete cascade
+);
+
+
+create table chefSchedule (
+    date date,
+    startTime time,
+    endTime time,
+    chefEmployeeID integer not null,
+    primary key (chefEmployeeID, date),
+    foreign key (chefEmployeeID) references chef(employeeID) on delete cascade
+);
+
+
+create table managerSchedule (
+    date date,
+    startTime time,
+    endTime time,
+    managerEmployeeID integer not null,
+    primary key (managerEmployeeID, date),
+    foreign key (managerEmployeeID) references manager(employeeID) on delete cascade
+);
+
+
+create table serverSchedule (
+    date date,
+    startTime time,
+    endTime time,
+    serverEmployeeID integer not null,
+    primary key (serverEmployeeID, date),
+    foreign key (serverEmployeeID) references serverE(employeeID) on delete cascade
+);
+
+
+create table deliverySchedule (
+    date date,
+    startTime time,
+    endTime time,
+    deliveryEmployeeID integer not null,
+    primary key (deliveryEmployeeID, date),
+    foreign key (deliveryEmployeeID) references delivery(employeeID) on delete cascade
+);
+
+
+create table payments (
+    date date,
+    accountCredit decimal(20,2) not null,
+    primary key (accountCredit, date),
+    foreign key (accountCredit) references account(credit) on delete cascade
+);
+
+
+create table foodItem (
+    foodName varchar(50),
+    price decimal(20,2),
+    restaurantName varchar(50) not null,
+    orderOrderID integer not null,
+    primary key (restaurantName, orderOrderID, foodName),
+    foreign key (restaurantName) references restaurant(name) on delete cascade,
+    foreign key (orderOrderID) references orderE(orderID)
+);
+
+
+create table chefRelationship (
+    chefEmployeeID integer not null,
+    customerEmailAddress varchar(50) not null,
+    type varchar(50),
+    primary key (chefEmployeeID, customerEmailAddress, type),
+    foreign key (chefEmployeeID) references chef(employeeID) on delete cascade,
+    foreign key (customerEmailAddress) references customer(emailAddress) on delete cascade
+);
+
+
+create table serverRelationship (
+    serverEmployeeID integer not null,
+    customerEmailAddress varchar(50) not null,
+    type varchar(50),
+    primary key (serverEmployeeID, customerEmailAddress, type),
+    foreign key (serverEmployeeID) references serverE(employeeID) on delete cascade,
+    foreign key (customerEmailAddress) references customer(emailAddress) on delete cascade
+);
+
+
+create table managerRelationship (
+    managerEmployeeID integer not null,
+    customerEmailAddress varchar(50) not null,
+    type varchar(50),
+    primary key (managerEmployeeID, customerEmailAddress, type),
+    foreign key (managerEmployeeID) references manager(employeeID) on delete cascade,
+    foreign key (customerEmailAddress) references customer(emailAddress) on delete cascade
+);
+
+
+create table deliveryRelationship (
+    deliveryEmployeeID integer not null,
+    customerEmailAddress varchar(50) not null,
+    type varchar(50),
+    primary key (deliveryEmployeeID, customerEmailAddress, type),
+    foreign key (deliveryEmployeeID) references delivery(employeeID) on delete cascade,
+    foreign key (customerEmailAddress) references customer(emailAddress) on delete cascade
+);
+
+
+create table credentials (
+    chefEmployeeID int not null,
+    credential varchar(50) not null,
+    primary key (chefEmployeeID, credential),
+    foreign key (chefEmployeeID) references chef(employeeID) on delete cascade
+);
+
+
+
+
+INSERT INTO restaurant (name, street, city, zip, url)
+VALUES
+('La Belle Vie', '510 Groveland Avenue', 'Minneapolis', '55403', 'www.labellevie.us'),
+('Bar La Grassa', '800 Washington Avenue North', 'Minneapolis', '55401', 'www.barlagrassa.com'),
+('Spoon and Stable', '211 North 1st Street', 'Minneapolis', '55401', 'www.spoonandstable.com'),
+('112 Eatery', '112 North 3rd Street', 'Minneapolis', '55401', 'www.112eatery.com'),
+('Hola Arepa', '3501 Nicollet Avenue South', 'Minneapolis', '55408', 'www.holaarepa.com'),
+('Red Rabbit', '201 North Washington Avenue', 'Minneapolis', '55401', 'www.redrabbitmn.com');
+
+
+INSERT INTO chef (employeeID, firstName, lastName, emailAddress, restaurantName)
+VALUES
+(1, 'Tim', 'McKee', 'tim.mckee@labellevie.us', 'La Belle Vie'),
+(2, 'Isaac', 'Becker', 'isaac.becker@barlagrassa.com', 'Bar La Grassa'),
+(3, 'Gavin', 'Kaysen', 'gavin.kaysen@spoonandstable.com', 'Spoon and Stable'),
+(4, 'Adam', 'Eaton', 'adam.eaton@112eatery.com', '112 Eatery'),
+(5, 'Christina', 'Nguyen', 'christina.nguyen@holaarepa.com', 'Hola Arepa'),
+(6, 'Todd', 'Macdonald', 'todd.macdonald@redrabbitmn.com', 'Red Rabbit');
+
+
+INSERT INTO manager (employeeID, firstName, lastName, emailAddress, restaurantName)
+VALUES
+(7, 'Julie', 'Cohen', 'julie.cohen@labellevie.us', 'La Belle Vie'),
+(8, 'Andrew', 'Kaufmann', 'andrew.kaufmann@barlagrassa.com', 'Bar La Grassa'),
+(9, 'Jon', 'Steed', 'jon.steed@spoonandstable.com', 'Spoon and Stable'),
+(10, 'Megan', 'Roberts', 'megan.roberts@112eatery.com', '112 Eatery'),
+(11, 'Dan', 'Oskey', 'dan.oskey@redrabbitmn.com', 'Red Rabbit'),
+(12, 'Amy', 'Johnson', 'amy.johnson@holaarepa.com', 'Hola Arepa');
+
+
+INSERT INTO serverE (employeeID, firstName, lastName, emailAddress, restaurantName)
+VALUES
+(13, 'Hannah', 'Johnson', 'hannah.johnson@labellevie.us', 'La Belle Vie'),
+(14, 'Rachel', 'Humphrey', 'rachel.humphrey@barlagrassa.com', 'Bar La Grassa'),
+(15, 'Matt', 'Johnson', 'matt.johnson@spoonandstable.com', 'Spoon and Stable'),
+(16, 'Jake', 'Forster', 'jake.forster@112eatery.com', '112 Eatery'),
+(17, 'Isabel', 'Castro', 'isabel.castro@holaarepa.com', 'Hola Arepa'),
+(18, 'Maggie', 'Maki', 'maggie.maki@redrabbitmn.com', 'Red Rabbit');
+
+
+INSERT INTO delivery (employeeID, firstName, lastName, emailAddress, restaurantName)
+VALUES
+(19, 'Sarah', 'Johnson', 'sarah.johnson@labellevie.us', 'La Belle Vie'),
+(20, 'Luke', 'Miller', 'luke.miller@barlagrassa.com', 'Bar La Grassa'),
+(21, 'Emma', 'Lee', 'emma.lee@spoonandstable.com', 'Spoon and Stable'),
+(22, 'Liam', 'Chen', 'liam.chen@112eatery.com', '112 Eatery'),
+(23, 'Avery', 'Kim', 'avery.kim@holaarepa.com', 'Hola Arepa'),
+(24, 'Ben', 'Foster', 'ben.foster@redrabbitmn.com', 'Red Rabbit');
+
+
+INSERT INTO customer (emailAddress, firstName, lastName, phoneNumber, street, city, zip)
+VALUES
+('john.doe@gmail.com', 'John', 'Doe', '6125551234', '123 Main St', 'Minneapolis', '55401'),
+('jane.smith@gmail.com', 'Jane', 'Smith', '6125555678', '456 1st Ave', 'Minneapolis', '55402'),
+('mike.jackson@gmail.com', 'Mike', 'Jackson', '6125559012', '789 2nd St', 'Minneapolis', '55403'),
+('emily.wang@gmail.com', 'Emily', 'Wang', '6125553456', '100 Nicollet Mall', 'Minneapolis', '55404'),
+('chris.lee@gmail.com', 'Chris', 'Lee', '6125557890', '200 Hennepin Ave', 'Minneapolis', '55405'),
+('mary.thomas@gmail.com', 'Mary', 'Thomas', '6125552345', '300 Washington Ave', 'Minneapolis', '55406');
+
+
+INSERT INTO orderE (orderID, totalprice, tip, placementTime, placementDate, deliveryTime, deliveredBy, customerEmailAddress, deliveryEmployeeID, restaurantName)
+VALUES
+(1, 30.50, 5.00, '18:00:00', '2023-04-07', '19:00:00', 'Sarah Johnson', 'john.doe@gmail.com', 19, 'La Belle Vie'),
+(2, 40.00, 7.00, '19:30:00', '2023-04-07', '20:15:00', 'Luke Miller', 'jane.smith@gmail.com', 20, 'Bar La Grassa'),
+(3, 55.00, 10.00, '20:00:00', '2023-04-07', '21:15:00', 'Emma Lee', 'mike.jackson@gmail.com', 21, 'Spoon and Stable'),
+(4, 28.00, 6.00, '18:45:00', '2023-04-08', '19:30:00', 'Liam Chen', 'emily.wang@gmail.com', 22, '112 Eatery'),
+(5, 20.00, 4.00, '21:00:00', '2023-04-09', '21:45:00', 'Avery Kim', 'chris.lee@gmail.com', 23, 'Hola Arepa'),
+(6, 45.00, 8.00, '19:15:00', '2023-01-09', '20:00:00', 'Ben Foster', 'mary.thomas@gmail.com', 24, 'Red Rabbit');
+
+
+INSERT INTO account (credit, customerEmailAddress)
+VALUES
+(1000.00, 'john.doe@gmail.com'),
+(500.00, 'jane.smith@gmail.com'),
+(2500.00, 'mike.jackson@gmail.com'),
+(750.00, 'emily.wang@gmail.com'),
+(2000.00, 'chris.lee@gmail.com'),
+(100.00, 'mary.thomas@gmail.com');
+
+
+INSERT INTO chefSchedule (date, startTime, endTime, chefEmployeeID)
+VALUES
+('2023-02-20', '10:00:00', '18:00:00', 1),
+('2023-02-21', '12:00:00', '20:00:00', 2),
+('2023-02-22', '14:00:00', '22:00:00', 3),
+('2023-02-23', '16:00:00', '00:00:00', 4),
+('2023-02-21', '18:00:00', '02:00:00', 5),
+('2023-02-22', '18:00:00', '02:00:00', 5),
+('2023-02-25', '18:00:00', '02:00:00', 5),
+('2023-02-25', '20:00:00', '04:00:00', 6),
+('2023-02-24', '20:00:00', '04:00:00', 6);
+
+
+INSERT INTO managerSchedule (date, startTime, endTime, managerEmployeeID)
+VALUES
+('2023-02-20', '09:00:00', '17:00:00', 7),
+('2023-02-21', '11:00:00', '19:00:00', 8),
+('2023-02-22', '13:00:00', '21:00:00', 9),
+('2023-02-23', '15:00:00', '23:00:00', 10),
+('2023-02-24', '17:00:00', '01:00:00', 11),
+('2023-02-25', '19:00:00', '03:00:00', 12);
+
+
+INSERT INTO serverSchedule (date, startTime, endTime, serverEmployeeID)
+VALUES
+('2023-02-20', '10:00:00', '18:00:00', 13),
+('2023-02-21', '12:00:00', '20:00:00', 14),
+('2023-02-22', '14:00:00', '22:00:00', 15),
+('2023-02-23', '16:00:00', '00:00:00', 16),
+('2023-02-24', '18:00:00', '02:00:00', 17),
+('2023-02-25', '20:00:00', '04:00:00', 18);
+
+
+INSERT INTO deliverySchedule (date, startTime, endTime, deliveryEmployeeID)
+VALUES
+('2023-02-20', '09:00:00', '17:00:00', 19),
+('2023-02-21', '11:00:00', '19:00:00', 20),
+('2023-02-22', '13:00:00', '21:00:00', 21),
+('2023-02-23', '15:00:00', '23:00:00', 22),
+('2023-02-24', '17:00:00', '01:00:00', 23),
+('2023-02-25', '19:00:00', '03:00:00', 24),
+('2023-02-26', '19:00:00', '03:00:00', 24);
+
+
+INSERT INTO foodItem (foodName, price, restaurantName, orderOrderID)
+VALUES
+('Roasted Chicken Breast', 22.00, 'La Belle Vie', 1),
+('Beef Tartare', 14.50, 'La Belle Vie', 2),
+('Chocolate Mousse', 10.00, 'La Belle Vie', 1);
+
+
+INSERT INTO foodItem (foodName, price, restaurantName, orderOrderID)
+VALUES
+('Burrata with Grilled Bread', 16.00, 'Bar La Grassa', 2),
+('Gnocchi with Cauliflower and Orange', 22.00, 'Bar La Grassa', 3),
+('Tagliatelle with Beef and Pork Bolognese', 18.00, 'Bar La Grassa', 5);
+
+
+INSERT INTO payments (date, accountCredit)
+VALUES
+('2023-02-11', 1000.00),
+('2023-02-10', 500.00),
+('2023-02-09', 2500.00),
+('2023-02-08', 750.00),
+('2023-02-07', 2000.00),
+('2023-02-06', 100.00);
+
+
+INSERT INTO chefRelationship (chefEmployeeID, customerEmailAddress, type)
+VALUES
+(1, 'john.doe@gmail.com', 'favorite'),
+(2, 'jane.smith@gmail.com', 'regular'),
+(3, 'mike.jackson@gmail.com', 'favorite'),
+(4, 'emily.wang@gmail.com', 'regular'),
+(5, 'chris.lee@gmail.com', 'favorite'),
+(6, 'mary.thomas@gmail.com', 'regular');
+
+
+INSERT INTO serverRelationship (serverEmployeeID, customerEmailAddress, type)
+VALUES
+(13, 'john.doe@gmail.com', 'regular'),
+(14, 'jane.smith@gmail.com', 'favorite'),
+(15, 'mike.jackson@gmail.com', 'regular'),
+(16, 'emily.wang@gmail.com', 'favorite'),
+(17, 'chris.lee@gmail.com', 'regular'),
+(18, 'mary.thomas@gmail.com', 'favorite');
+
+
+INSERT INTO managerRelationship (managerEmployeeID, customerEmailAddress, type)
+VALUES
+(7, 'john.doe@gmail.com', 'regular'),
+(8, 'jane.smith@gmail.com', 'favorite'),
+(9, 'mike.jackson@gmail.com', 'regular'),
+(10, 'emily.wang@gmail.com', 'favorite'),
+(11, 'chris.lee@gmail.com', 'regular'),
+(12, 'mary.thomas@gmail.com', 'favorite');
+
+
+INSERT INTO deliveryRelationship (deliveryEmployeeID, customerEmailAddress, type)
+VALUES
+(19, 'john.doe@gmail.com', 'regular'),
+(20, 'jane.smith@gmail.com', 'regular'),
+(21, 'mike.jackson@gmail.com', 'favorite'),
+(22, 'emily.wang@gmail.com', 'favorite'),
+(23, 'chris.lee@gmail.com', 'regular'),
+(24, 'mary.thomas@gmail.com', 'regular');
+
+
+INSERT INTO credentials (chefEmployeeID, credential)
+VALUES 
+(1, 'Certified Executive Chef'),
+(2, 'Certified Sous Chef'),
+(3, 'Certified Master Chef'),
+(4, 'Certified Chef de Cuisine'),
+(5, 'Certified Pastry Chef'),
+(6, 'Certified Personal Chef');
